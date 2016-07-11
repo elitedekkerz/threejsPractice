@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <title>Elite Dekkerz</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+   </head>
+   <body>
+      <script src="three.js/build/three.js"></script>	
+		<script src="three.js/examples/js/loaders/OBJLoader.js"></script>
+      <script>
+      var scene, camera, renderer;
+      var geometry, material, mesh;
+
+      init();
+      animate();
+
+      function init() {
+
+         //scene
+         scene = new THREE.Scene();
+
+         //camera
+         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+         camera.position.z = 200;
+         camera.position.y = 100;
+
+         //lights
+         var ambient = new THREE.AmbientLight( 0xffffff );
+         scene.add( ambient );
+
+         // texture
+
+         var manager = new THREE.LoadingManager();
+         manager.onProgress = function ( item, loaded, total ) {
+
+            console.log( item, loaded, total );
+
+         };
+
+         var texture = new THREE.Texture();
+
+         var onProgress = function ( xhr ) {
+            if ( xhr.lengthComputable ) {
+               var percentComplete = xhr.loaded / xhr.total * 100;
+               console.log( Math.round(percentComplete, 2) + '% downloaded' );
+            }
+         };
+
+         var onError = function ( xhr ) {
+         };
+
+
+         var loader = new THREE.ImageLoader( manager );
+         loader.load( 'three.js/examples/textures/UV_Grid_Sm.jpg', function ( image ) {
+
+            texture.image = image;
+            texture.needsUpdate = true;
+
+         } );
+
+         // model
+
+         var loader = new THREE.OBJLoader( manager );
+         loader.load( 'three.js/examples/obj/male02/male02.obj', function ( object ) {
+
+            object.traverse( function ( child ) {
+
+               if ( child instanceof THREE.Mesh ) {
+
+                  child.material.map = texture;
+
+               }
+
+            } );
+
+            //object.position.y = - 95;
+            object.name = "dude"
+            scene.add( object );
+
+         }, onProgress, onError );
+/*
+         geometry = new THREE.BoxGeometry( 2, 2, 2 );
+         material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+
+         mesh = new THREE.Mesh( geometry, material );
+         scene.add( mesh );
+*/
+         renderer = new THREE.WebGLRenderer();
+         renderer.setSize( window.innerWidth, window.innerHeight );
+
+         document.body.appendChild( renderer.domElement );
+
+      }
+
+      function animate() {
+         var dude = scene.getObjectByName( "dude" );
+         requestAnimationFrame( animate );
+
+         //dude.rotation.x += 0.01;
+         dude.rotation.y += 0.02;
+
+         renderer.render( scene, camera );
+
+      }
+      </script>
+   </body>
